@@ -1,183 +1,153 @@
-// 导航栏滚动效果
-const navbar = document.querySelector('.navbar');
-const backToTop = document.querySelector('.back-to-top');
+document.addEventListener('DOMContentLoaded', () => {
+    const nav = document.getElementById('nav');
+    const menuBtn = document.getElementById('menuBtn');
+    const navLinks = document.getElementById('navLinks');
+    const backTop = document.getElementById('backTop');
+    const counters = document.querySelectorAll('.kpi-number');
 
-window.addEventListener('scroll', () => {
-    if (window.scrollY > 50) {
-        navbar.classList.add('scrolled');
-    } else {
-        navbar.classList.remove('scrolled');
-    }
-    
-    if (window.scrollY > 500) {
-        backToTop.classList.add('visible');
-    } else {
-        backToTop.classList.remove('visible');
-    }
-});
-
-// 移动端菜单
-const menuToggle = document.querySelector('.menu-toggle');
-const navMenu = document.querySelector('.nav-menu');
-const navLinks = document.querySelectorAll('.nav-menu a');
-
-menuToggle.addEventListener('click', () => {
-    menuToggle.classList.toggle('active');
-    navMenu.classList.toggle('active');
-    document.body.style.overflow = navMenu.classList.contains('active') ? 'hidden' : '';
-});
-
-navLinks.forEach(link => {
-    link.addEventListener('click', () => {
-        menuToggle.classList.remove('active');
-        navMenu.classList.remove('active');
-        document.body.style.overflow = '';
-    });
-});
-
-// 鼠标光晕效果
-const cursorGlow = document.querySelector('.cursor-glow');
-let mouseX = 0, mouseY = 0;
-let glowX = 0, glowY = 0;
-
-if (window.matchMedia('(pointer: fine)').matches) {
-    document.addEventListener('mousemove', (e) => {
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-    });
-    
-    function animateGlow() {
-        glowX += (mouseX - glowX) * 0.1;
-        glowY += (mouseY - glowY) * 0.1;
-        cursorGlow.style.left = glowX + 'px';
-        cursorGlow.style.top = glowY + 'px';
-        requestAnimationFrame(animateGlow);
-    }
-    animateGlow();
-}
-
-// 数字计数动画
-function animateCounters() {
-    const counters = document.querySelectorAll('.stat-number');
-    const speed = 200;
-    
-    counters.forEach(counter => {
-        const target = parseInt(counter.getAttribute('data-target'));
-        const count = +counter.innerText;
-        const increment = target / speed;
-        
-        if (count < target) {
-            counter.innerText = Math.ceil(count + increment);
-            setTimeout(animateCounters, 20);
+    // 导航滚动效果
+    function handleScroll() {
+        if (window.scrollY > 60) {
+            nav.classList.add('scrolled');
         } else {
-            counter.innerText = target;
+            nav.classList.remove('scrolled');
         }
-    });
-}
 
-// 滚动显示动画
-function revealOnScroll() {
-    const reveals = document.querySelectorAll('.section-header, .advantage-card, .timeline-item, .education-card, .certificate-card, .skill-tag, .contact-card');
-    
-    reveals.forEach((element, index) => {
-        const windowHeight = window.innerHeight;
-        const elementTop = element.getBoundingClientRect().top;
-        const elementVisible = 100;
-        
-        if (elementTop < windowHeight - elementVisible) {
-            element.classList.add('reveal', 'active');
+        if (window.scrollY > 500) {
+            backTop.classList.add('visible');
+        } else {
+            backTop.classList.remove('visible');
         }
-    });
-}
+    }
 
-// 添加初始reveal类
-function initReveal() {
-    const reveals = document.querySelectorAll('.section-header, .advantage-card, .timeline-item, .education-card, .certificate-card, .skill-tag, .contact-card');
-    reveals.forEach(element => {
-        element.classList.add('reveal');
-    });
-}
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
 
-// 技能标签交错动画
-function animateSkillTags() {
-    const skillTags = document.querySelectorAll('.skill-tag');
-    skillTags.forEach((tag, index) => {
+    // 移动端菜单
+    menuBtn.addEventListener('click', () => {
+        menuBtn.classList.toggle('active');
+        navLinks.classList.toggle('active');
+        document.body.style.overflow = navLinks.classList.contains('active') ? 'hidden' : '';
+    });
+
+    // 点击链接后关闭菜单
+    navLinks.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+            menuBtn.classList.remove('active');
+            navLinks.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+    });
+
+    // 平滑滚动
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                const offset = target.offsetTop - 100;
+                window.scrollTo({
+                    top: offset,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+
+    // 数字计数动画
+    const countUp = (el, target) => {
+        let current = 0;
+        const duration = 1500;
+        const step = target / (duration / 16);
+        const timer = setInterval(() => {
+            current += step;
+            if (current >= target) {
+                el.textContent = target;
+                clearInterval(timer);
+            } else {
+                el.textContent = Math.floor(current);
+            }
+        }, 16);
+    };
+
+    // 图表动画
+    const animateCharts = () => {
+        // 环形图
+        document.querySelectorAll('.donut-progress').forEach(circle => {
+            const percent = parseFloat(circle.getAttribute('data-percent'));
+            const circumference = 2 * Math.PI * 50;
+            const offset = circumference - (percent / 100) * circumference;
+            circle.style.strokeDasharray = circumference;
+            circle.style.strokeDashoffset = offset;
+        });
+
+        // 柱状图
+        document.querySelectorAll('.bar-fill').forEach(bar => {
+            const width = bar.getAttribute('data-width');
+            setTimeout(() => {
+                bar.style.width = width + '%';
+            }, 200);
+        });
+
+        // 技能进度条
+        document.querySelectorAll('.skill-bar-fill').forEach(fill => {
+            const width = fill.getAttribute('data-width');
+            setTimeout(() => {
+                fill.style.width = width + '%';
+            }, 200);
+        });
+    };
+
+    // Intersection Observer 用于滚动动画
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.15
+    };
+
+    let counterAnimated = false;
+
+    const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('active');
+                
+                // 触发计数器
+                if (entry.target.classList.contains('metrics') && !counterAnimated) {
+                    counterAnimated = true;
+                    counters.forEach(counter => {
+                        const target = parseInt(counter.getAttribute('data-target'));
+                        countUp(counter, target);
+                    });
+                    animateCharts();
+                }
+            }
+        });
+    }, observerOptions);
+
+    // 添加 reveal 类并观察
+    const revealElements = document.querySelectorAll('.section-header, .metric-card, .about-card, .timeline-item, .skill-bars, .certificates, .skill-tags, .edu-card, .contact-card');
+    revealElements.forEach(el => {
+        el.classList.add('reveal');
+        revealObserver.observe(el);
+    });
+
+    // 单独观察 metrics 区域用于触发图表
+    const metricsSection = document.querySelector('.metrics');
+    if (metricsSection) {
+        metricsSection.classList.add('reveal');
+        revealObserver.observe(metricsSection);
+    }
+
+    // 触发 Hero 区域动画
+    setTimeout(() => {
+        document.querySelector('.hero-card').classList.add('active');
+    }, 100);
+
+    // 技能标签错落动画
+    document.querySelectorAll('.skill-tags span').forEach((tag, index) => {
         tag.style.transitionDelay = `${index * 50}ms`;
     });
-}
 
-// 页面加载完成后执行
-document.addEventListener('DOMContentLoaded', () => {
-    initReveal();
-    animateSkillTags();
-    revealOnScroll();
-    
-    // 延迟启动计数器，确保在视口内
-    setTimeout(() => {
-        const heroSection = document.querySelector('.hero');
-        const heroRect = heroSection.getBoundingClientRect();
-        if (heroRect.bottom > 0) {
-            animateCounters();
-        }
-    }, 500);
+    console.log('黄才莹个人简历网站已加载');
 });
-
-window.addEventListener('scroll', revealOnScroll);
-
-// 平滑滚动
-navLinks.forEach(link => {
-    link.addEventListener('click', function(e) {
-        e.preventDefault();
-        const targetId = this.getAttribute('href');
-        const targetSection = document.querySelector(targetId);
-        if (targetSection) {
-            const offsetTop = targetSection.offsetTop - 80;
-            window.scrollTo({
-                top: offsetTop,
-                behavior: 'smooth'
-            });
-        }
-    });
-});
-
-// 联系按钮点击反馈
-document.querySelectorAll('.btn, .contact-item').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-        // 创建涟漪效果
-        const ripple = document.createElement('span');
-        ripple.style.cssText = `
-            position: absolute;
-            background: rgba(255,255,255,0.3);
-            border-radius: 50%;
-            transform: scale(0);
-            animation: ripple 0.6s linear;
-            pointer-events: none;
-        `;
-        
-        const rect = this.getBoundingClientRect();
-        const size = Math.max(rect.width, rect.height);
-        ripple.style.width = ripple.style.height = size + 'px';
-        ripple.style.left = (e.clientX - rect.left - size/2) + 'px';
-        ripple.style.top = (e.clientY - rect.top - size/2) + 'px';
-        
-        this.style.position = 'relative';
-        this.style.overflow = 'hidden';
-        this.appendChild(ripple);
-        
-        setTimeout(() => ripple.remove(), 600);
-    });
-});
-
-// 添加涟漪动画样式
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes ripple {
-        to {
-            transform: scale(4);
-            opacity: 0;
-        }
-    }
-`;
-document.head.appendChild(style);
-
-console.log('黄才莹个人简历网站已加载完成');
